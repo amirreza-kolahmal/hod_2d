@@ -9,7 +9,7 @@ from astropy.cosmology import Planck15, FLRW
 import astropy.constants as const
 import astropy.units as u
 
-
+REQUIRED_COLUMNS = ["x", "y", "z", "vx", "vy", "vz", "mvir", "rvir", "rs", "vrms"]
 # ==============================================================================
 # 1. ASTROPY CONSTANTS & LOOKUP TABLES
 # ==============================================================================

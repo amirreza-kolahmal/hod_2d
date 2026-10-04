@@ -1,1 +1,6 @@
-from .engine import precompute_halo_ranks, generate_extended_hod_mock, calculate_rsd_factor
+from .engine import (
+    generate_extended_hod_mock,
+    precompute_halo_ranks,
+    calculate_rsd_factor,
+    REQUIRED_COLUMNS
+)
