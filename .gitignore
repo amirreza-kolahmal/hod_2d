@@ -1,0 +1,16 @@
+# Ignore heavy simulation data files
+*.npy
+*.fits
+*.csv
+
+# Ignore Python cache and compiler files
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Ignore virtual environments and IDE settings
+.venv/
+venv/
+.idea/
+.vscode/
+.DS_Store
