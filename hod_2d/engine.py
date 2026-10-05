@@ -9,7 +9,8 @@ from astropy.cosmology import Planck15, FLRW
 import astropy.constants as const
 import astropy.units as u
 
-REQUIRED_COLUMNS = ["x", "y", "z", "vx", "vy", "vz", "mvir", "rvir", "rs", "vrms"]
+
+
 # ==============================================================================
 # 1. ASTROPY CONSTANTS & LOOKUP TABLES
 # ==============================================================================
@@ -119,7 +120,8 @@ def precompute_halo_ranks(
     df: Any, 
     box_size: float = 400.0, 
     r_env: float = 5.0, 
-    n_bins: int = 100
+    n_bins: int = 100,
+    bin_method: str = "equal_count"
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Precomputes mass-conditioned concentration and environment density ranks 
@@ -143,18 +145,22 @@ def precompute_halo_ranks(
     if "halo_nfw_conc" not in df.columns:
         df["halo_nfw_conc"] = df["rvir"] / df["rs"]
 
-    # 3. Compute Ranks
+    # 3. Compute Ranks (passing bin_method down!)
     halo_masses = df["mvir"].to_numpy()
     halo_coords = np.mod(df[["x", "y", "z"]].to_numpy(), box_size)
     halo_coords = np.clip(halo_coords, 0.0, box_size - 1e-7)
     
-    conc_ranks = get_mass_conditioned_ranks(halo_masses, df["halo_nfw_conc"].to_numpy(), n_bins=n_bins)
+    conc_ranks = get_mass_conditioned_ranks(
+        halo_masses, df["halo_nfw_conc"].to_numpy(), n_bins=n_bins, method=bin_method
+    )
     
     tree = cKDTree(halo_coords, boxsize=box_size)
     neighbor_indices = tree.query_ball_point(halo_coords, r=r_env, workers=-1)
     env_mass_density = np.array([halo_masses[idx].sum() for idx in neighbor_indices])
     
-    env_ranks = get_mass_conditioned_ranks(halo_masses, env_mass_density, n_bins=n_bins)
+    env_ranks = get_mass_conditioned_ranks(
+        halo_masses, env_mass_density, n_bins=n_bins, method=bin_method
+    )
     
     return conc_ranks, env_ranks
 
@@ -169,7 +175,6 @@ DEFAULT_HOD_PARAMS = {
     "alpha": 1.0,
     "alpha_c": 0.0,      # Default: no velocity bias
     "alpha_s": 1.0,      # Default: perfect Jeans kinematics
-    "c_gal_bias": 1.0,
     "A_cent": 0.0,       # Default: no concentration bias
     "A_sat": 0.0,
     "B_cent": 0.0,       # Default: no environment bias
@@ -192,7 +197,7 @@ def generate_extended_hod_mock(
     rsd_factor: Optional[float] = None,
     redshift: float = 0.55,
     cosmo: FLRW = Planck15,
-    box_size: float = 400.0
+    box_size: float = 400.0,
 ) -> pd.DataFrame:
     """
     Generates a full 3D mock galaxy catalog with 2D Assembly Bias (Concentration + Environment),
@@ -283,7 +288,7 @@ def generate_extended_hod_mock(
     sat_rs = np.repeat(df["rs"].to_numpy(), n_sat, axis=0)
     sat_rvir = np.repeat(df["rvir"].to_numpy(), n_sat, axis=0)
     sat_mvir = np.repeat(df["mvir"].to_numpy(), n_sat, axis=0)
-    sat_c = np.repeat(df["halo_nfw_conc"].to_numpy(), n_sat, axis=0) * params["c_gal_bias"]
+    sat_c = np.repeat(df["halo_nfw_conc"].to_numpy(), n_sat, axis=0)
     
     u = rng.uniform(0.0, 1.0, total_sat)
     target_g = u * nfw_enclosed_mass(sat_c)
