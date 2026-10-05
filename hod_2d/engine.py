@@ -179,6 +179,7 @@ DEFAULT_HOD_PARAMS = {
     "A_sat": 0.0,
     "B_cent": 0.0,       # Default: no environment bias
     "B_sat": 0.0,
+    "c_gal_bias": 1.0,   # Default: satellites trace DM concentration perfectly
     "enable_conc_bias": False,
     "enable_env_bias": False
 }
@@ -288,7 +289,9 @@ def generate_extended_hod_mock(
     sat_rs = np.repeat(df["rs"].to_numpy(), n_sat, axis=0)
     sat_rvir = np.repeat(df["rvir"].to_numpy(), n_sat, axis=0)
     sat_mvir = np.repeat(df["mvir"].to_numpy(), n_sat, axis=0)
-    sat_c = np.repeat(df["halo_nfw_conc"].to_numpy(), n_sat, axis=0)
+    
+    # Multiplier applied here: controls satellite concentration relative to the DM halo
+    sat_c = np.repeat(df["halo_nfw_conc"].to_numpy(), n_sat, axis=0) * params["c_gal_bias"]
     
     u = rng.uniform(0.0, 1.0, total_sat)
     target_g = u * nfw_enclosed_mass(sat_c)
