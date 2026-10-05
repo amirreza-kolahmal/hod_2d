@@ -63,25 +63,52 @@ def calculate_rsd_factor(redshift: float, cosmo: FLRW = Planck15) -> float:
 def get_mass_conditioned_ranks(
     halo_masses: np.ndarray, 
     values: np.ndarray, 
-    n_bins: int = 100
+    n_bins: int = 100,
+    method: str = "equal_count"
 ) -> np.ndarray:
-    """
-    Computes mass-conditioned percentile ranks [0.0 to 1.0] using equal-count 
-    mass binning (Halotools-style).
-    """
-    ranks = np.zeros_like(values, dtype=float)
-    mass_sort_idx = np.argsort(halo_masses)
-    bin_chunks = np.array_split(mass_sort_idx, n_bins)
+    # Computes mass-conditioned percentile ranks normalized from 0.0 to 1.0.
+    # 
+    # Parameters:
+    # halo_masses: Array of halo masses.
+    # values: Secondary halo property (concentration, environment, etc).
+    # n_bins: Number of mass bins. Default is 100.
+    # method: Binning strategy ('equal_count' or 'equal_width'). Default is 'equal_count'.
+    # 
+    # Returns:
+    # Mass-conditioned percentile ranks in range 0.0 to 1.0 as a numpy array.
     
-    for chunk in bin_chunks:
-        n_in_bin = len(chunk)
-        if n_in_bin > 1:
-            bin_vals = values[chunk]
-            raw_ranks = rankdata(bin_vals, method="average")
-            ranks[chunk] = (raw_ranks - 0.5) / n_in_bin
-        else:
-            ranks[chunk] = 0.5
-            
+    ranks = np.zeros_like(values, dtype=float)
+
+    if method == "equal_count":
+        mass_sort_idx = np.argsort(halo_masses)
+        bin_chunks = np.array_split(mass_sort_idx, n_bins)
+
+        for chunk in bin_chunks:
+            n_in_bin = len(chunk)
+            if n_in_bin > 1:
+                bin_vals = values[chunk]
+                raw_ranks = rankdata(bin_vals, method="average")
+                ranks[chunk] = (raw_ranks - 0.5) / n_in_bin
+            elif n_in_bin == 1:
+                ranks[chunk] = 0.5
+
+    elif method in ("equal_width", "fixed_width"):
+        log_masses = np.log10(halo_masses)
+        bin_edges = np.linspace(log_masses.min() - 1e-5, log_masses.max() + 1e-5, n_bins + 1)
+        bin_indices = np.digitize(log_masses, bin_edges)
+
+        for b in range(1, n_bins + 1):
+            mask = (bin_indices == b)
+            n_in_bin = np.sum(mask)
+            if n_in_bin > 1:
+                bin_vals = values[mask]
+                raw_ranks = rankdata(bin_vals, method="average")
+                ranks[mask] = (raw_ranks - 0.5) / n_in_bin
+            elif n_in_bin == 1:
+                ranks[mask] = 0.5
+    else:
+        raise ValueError("Unknown binning method. Choose equal_count or equal_width.")
+
     return ranks
 
 
