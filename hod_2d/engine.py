@@ -51,6 +51,10 @@ NFW_G_GRID = nfw_enclosed_mass(NFW_X_GRID)
 # ==============================================================================
 # 2. HELPER UTILITIES
 # ==============================================================================
+
+REQUIRED_COLUMNS = ["x", "y", "z", "vx", "vy", "vz", "mvir", "rvir", "rs", "vrms"]
+
+
 def calculate_rsd_factor(redshift: float, cosmo: FLRW = Planck15) -> float:
     """
     Computes velocity-to-displacement conversion factor (km/s to Mpc/h)
