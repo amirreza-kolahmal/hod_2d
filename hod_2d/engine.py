@@ -176,6 +176,7 @@ DEFAULT_HOD_PARAMS = {
     "logMmin": 12.7,
     "sigma_logM": 0.35,
     "logM1": 13.8,
+    "logM0": 12.7,
     "alpha": 1.0,
     "alpha_c": 0.0,      # Default: no velocity bias
     "alpha_s": 1.0,      # Default: perfect Jeans kinematics
@@ -267,7 +268,9 @@ def generate_extended_hod_mock(
     # B. SATELLITE GALAXIES OCCUPATION
     # --------------------------------------------------------------------------
     m_1 = 10**params["logM1"]
-    mass_diff = np.maximum(0.0, halo_masses - m_cut)
+    m_0 = 10**params["logM0"]
+
+    mass_diff = np.maximum(0.0, halo_masses - m_0)
     mean_n_sat_base = (mass_diff / m_1) ** params["alpha"]
     
     sat_shift = (c_flag * params["A_sat"] * (conc_ranks - 0.5) +
