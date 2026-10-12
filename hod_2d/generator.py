@@ -192,7 +192,7 @@ def run_sbi_pipeline(
             skip_existing=skip_existing,
             seed=seed
             )
-        master_metadata.append(metadata_rows)
+        master_metadata.extend(metadata_rows)
     
     print("\nExporting master metadata CSV...")
     df_meta = pd.DataFrame(master_metadata)
