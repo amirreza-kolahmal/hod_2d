@@ -2,6 +2,11 @@
 *.npy
 *.fits
 *.csv
+*.parquet
+
+# Ignore plot outputs
+*.png
+*.pdf
 
 # Ignore Python cache and compiler files
 __pycache__/
@@ -14,3 +19,7 @@ venv/
 .idea/
 .vscode/
 .DS_Store
+
+# Ignore build and package artifacts
+build/
+*.egg-info/
