@@ -5,7 +5,7 @@ from .engine import (
     REQUIRED_COLUMNS
 )
 
-from .pipeline import (
+from .generate import (
     run_sbi_pipeline,
     sample_hod_priors
 )
