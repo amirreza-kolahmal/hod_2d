@@ -176,6 +176,10 @@ def run_sbi_pipeline(
     # 2. Loop through simulations with a progress bar
     for sim_id in tqdm(sim_ids, desc="Processing Realizations"):
         
+        
+        current_seed = seed + sim_id if seed is not None else None
+        
+        # Call the single-realization manager
         metadata_rows = process_single_realization(
             sim_id=sim_id,
             catalog_dir=catalog_dir,
@@ -190,8 +194,8 @@ def run_sbi_pipeline(
             bin_method="equal_count",
             output_format=output_format,
             skip_existing=skip_existing,
-            seed=seed
-            )
+            seed=current_seed
+        )
         master_metadata.extend(metadata_rows)
     
     print("\nExporting master metadata CSV...")
